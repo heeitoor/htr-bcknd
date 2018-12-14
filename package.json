@@ -1,0 +1,24 @@
+{
+  "name": "htr-bcknd",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heeitoor/htr-bcknd.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/heeitoor/htr-bcknd/issues"
+  },
+  "homepage": "https://github.com/heeitoor/htr-bcknd#readme"
+}
