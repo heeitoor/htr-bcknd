@@ -1,6 +1,4 @@
 import { Router } from "express";
-import { Mediator } from "../lib/Mediator";
-import { MockPostHandler } from "../core/handlers/MockHandler";
 import { MockPostRequest } from "../core/requests/MockRequest";
 import { MockPostResponse } from "../core/responses/MockResponse";
 import { Handler } from "../core/Enums";
@@ -19,8 +17,6 @@ export class MockRoute {
       const response = _mediator.send<MockPostRequest, MockPostResponse>(
         request
       );
-      
-      console.log(response);
 
       res.send(req.body);
     });

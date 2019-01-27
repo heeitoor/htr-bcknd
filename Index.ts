@@ -1,56 +1,57 @@
-// var http = require("http");
-// var express = require('express');
-
-// var app = express().
-
-// http
-//   .createServer((req, res) => {
-//     res.end("dfsdf");
-//   })
-//   .listen(process.env.PORT || 3500);
-
 import express from "express";
 import { RouteBundle } from "./lib/Router";
 import { json } from "body-parser";
 import { HandlerMiddleware } from "./middlewares/HandlerMiddleware";
-import { print, createClient } from "redis";
-
-const client = createClient({
-  port: 18973,
-  host: "redis-18973.c8.us-east-1-4.ec2.cloud.redislabs.com",
-  password: "C41AXTFwgtWW4p2M6Y9ubQNg5KHGP7Pd",
-  db: 0
-});
-
-client.on("error", x => {
-  console.log("Error " + x);
-});
-
-client.on("connect", x => {
-  console.log("connected");
-  client.set("htht", new Date().toString(), print);
-});
-
-// client.set("ssid", "ade31fe5af", x => {
-//   console.log(x);
-// });
+//import { RedisMiddleware } from "./middlewares/RedisMiddleware";
+import he from "http";
+import io from "socket.io";
+import cors from 'cors';
 
 const app: express.Application = express();
+const http = he.createServer(app);
+
+//const sckt = io(http).emit("some event", { for: "everyone" });
 
 app.use(json());
 
+// app.get("/", function(req: any, res: any) {
+//   res.sendFile(__dirname + "/client/index.html");
+// });
+//app.use(express.static("client"));
+
+//app.use(RedisMiddleware.definition);
 app.use(HandlerMiddleware.definition);
 
-app.use("/param", (req, res) => {
-  res.send(process.env.TEST || "didn't work");
-});
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
 
-app.use("/redis", (req, res) => {
-  client.get("htht", (e, r) => {
-    res.send(r);
-  });
-});
+app.use(cors());
+ 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// sckt.on("connection", (socket: any) => {
+//   socket.broadcast.emit("hi");
+//   console.log("a user connected");
+
+//   socket.on("disconnect", function() {
+//     console.log("user disconnected");
+//   });
+
+//   socket.on("chat message", function(msg: any) {
+//     sckt.emit("chat message", msg);
+//   });
+// });
+
+// app.use("/param", (req, res) => {
+//   res.send(process.env.TEST || "didn't work");
+// });
+
+// app.use("/redis", (req, res) => {
+//   // client.get("htht", (e, r) => {
+//   //   res.send(r);
+//   // });
+// });
 
 RouteBundle.register(app);
 
-app.listen(process.env.PORT || 3500);
+http.listen(process.env.PORT || 3500);

@@ -1,8 +1,10 @@
 import express, { Router } from "express";
-import { MockRoute } from "../routes/MockRoute";
+import { LastFmRoute } from "../routes/LastFmRouter";
+import { FrekvensRoute } from "../routes/FrekvensRouter";
 
 export class RouteBundle {
   public static register(app: express.Application) {
-    app.use(MockRoute.definition);
+    app.use(LastFmRoute.definition);
+    app.use(FrekvensRoute.definition);
   }
 }

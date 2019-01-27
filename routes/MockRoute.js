@@ -1,22 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var express_1 = require("express");
-var Enums_1 = require("../core/Enums");
-var Global_1 = require("../Global");
-var MockRoute = /** @class */ (function () {
-    function MockRoute() {
-    }
-    MockRoute.prefix = "/mock";
-    MockRoute.definition = express_1.Router()
-        .get(MockRoute.prefix, function (req, res) {
-        res.send(req.url);
-    })
-        .post(MockRoute.prefix, function (req, res) {
-        var request = { type: Enums_1.Handler.MockPostRequest, body: req.body };
-        var response = Global_1._mediator.send(request);
-        console.log(response);
-        res.send(req.body);
-    });
-    return MockRoute;
-}());
+const express_1 = require("express");
+const Enums_1 = require("../core/Enums");
+const Global_1 = require("../Global");
+class MockRoute {
+}
+MockRoute.prefix = "/mock";
+MockRoute.definition = express_1.Router()
+    .get(MockRoute.prefix, (req, res) => {
+    res.send(req.url);
+})
+    .post(MockRoute.prefix, (req, res) => {
+    const request = { type: Enums_1.Handler.MockPostRequest, body: req.body };
+    const response = Global_1._mediator.send(request);
+    res.send(req.body);
+});
 exports.MockRoute = MockRoute;

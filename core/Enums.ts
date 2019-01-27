@@ -1,4 +1,8 @@
 export enum Handler {
     NOT_DEFINED,
-    MockPostRequest
+    MockPostRequest,
+    LastFmArtistInfoRequest,
+    LastFmSimilarArtistRequest,
+    FrekvensGetClassesRequest,
+    FrekvensSaveAttendanceRequest
 }

@@ -1,5 +1,4 @@
 import { Handler } from "../core/Enums";
-import { MockPostHandler } from "../core/handlers/MockHandler";
 import { Dictionary } from "./Dictionary";
 
 export interface IRequest<T extends any> {
@@ -12,11 +11,11 @@ export interface IResponse<T extends any> {
 }
 
 export interface IHandler<TReq, TRes> {
-  handle(request: TReq): IResponse<TRes>;
+  handle(request: TReq): Promise<TRes>;
 }
 
 export interface IMediator {
-  send<TReq, TRes>(request: IRequest<TReq>): IResponse<TRes>;
+  send<TReq, TRes>(request: IRequest<TReq>): Promise<TRes>;
 }
 
 export class Mediator implements IMediator {
@@ -26,12 +25,11 @@ export class Mediator implements IMediator {
     this.handlers = new Dictionary<string, IHandler<any, any>>();
   }
 
-  registerHandler() {}
-
-  send<TReq extends any, TRes extends any>(
-    request: IRequest<TReq>
-  ): IResponse<TRes> {
+  send<TReq extends any, TRes extends any>(request: IRequest<TReq>): Promise<TRes> {
     const handler = this.handlers.get(request.type.toString());
+    console.log(request)
+    console.log(handler)
+    console.log(request.type)
     return handler.value.handle(request.body);
   }
 }

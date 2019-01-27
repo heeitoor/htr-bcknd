@@ -1,47 +1,46 @@
 "use strict";
-// var http = require("http");
-// var express = require('express');
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// var app = express().
-// http
-//   .createServer((req, res) => {
-//     res.end("dfsdf");
-//   })
-//   .listen(process.env.PORT || 3500);
-var express_1 = __importDefault(require("express"));
-var Router_1 = require("./lib/Router");
-var body_parser_1 = require("body-parser");
-var HandlerMiddleware_1 = require("./middlewares/HandlerMiddleware");
-var redis_1 = require("redis");
-var client = redis_1.createClient({
-    port: 18973,
-    host: "redis-18973.c8.us-east-1-4.ec2.cloud.redislabs.com",
-    password: "C41AXTFwgtWW4p2M6Y9ubQNg5KHGP7Pd",
-    db: 0
-});
-client.on("error", function (x) {
-    console.log("Error " + x);
-});
-client.on("connect", function (x) {
-    console.log("connected");
-    client.set("htht", new Date().toString(), redis_1.print);
-});
-// client.set("ssid", "ade31fe5af", x => {
-//   console.log(x);
-// });
-var app = express_1.default();
+const express_1 = __importDefault(require("express"));
+const Router_1 = require("./lib/Router");
+const body_parser_1 = require("body-parser");
+const HandlerMiddleware_1 = require("./middlewares/HandlerMiddleware");
+//import { RedisMiddleware } from "./middlewares/RedisMiddleware";
+const http_1 = __importDefault(require("http"));
+const cors_1 = __importDefault(require("cors"));
+const app = express_1.default();
+const http = http_1.default.createServer(app);
+//const sckt = io(http).emit("some event", { for: "everyone" });
 app.use(body_parser_1.json());
+// app.get("/", function(req: any, res: any) {
+//   res.sendFile(__dirname + "/client/index.html");
+// });
+//app.use(express.static("client"));
+//app.use(RedisMiddleware.definition);
 app.use(HandlerMiddleware_1.HandlerMiddleware.definition);
-app.use("/param", function (req, res) {
-    res.send(process.env.TEST || "didn't work");
-});
-app.use("/redis", function (req, res) {
-    client.get("htht", function (e, r) {
-        res.send(r);
-    });
-});
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
+app.use(cors_1.default());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// sckt.on("connection", (socket: any) => {
+//   socket.broadcast.emit("hi");
+//   console.log("a user connected");
+//   socket.on("disconnect", function() {
+//     console.log("user disconnected");
+//   });
+//   socket.on("chat message", function(msg: any) {
+//     sckt.emit("chat message", msg);
+//   });
+// });
+// app.use("/param", (req, res) => {
+//   res.send(process.env.TEST || "didn't work");
+// });
+// app.use("/redis", (req, res) => {
+//   // client.get("htht", (e, r) => {
+//   //   res.send(r);
+//   // });
+// });
 Router_1.RouteBundle.register(app);
-app.listen(process.env.PORT || 3500);
+http.listen(process.env.PORT || 3500);

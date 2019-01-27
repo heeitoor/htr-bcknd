@@ -1,0 +1,128 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This api has these operations to offer, enjoy!",
+    "version": "1.0.0",
+    "title": "HtrBcknd Swagger"
+  },
+  "host": "localhost:3500",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Artist",
+      "description": "Endpoints for information about an artist."
+    }
+  ],
+  "paths": {
+    "/lastfm/artist/info": {
+      "get": {
+        "tags": ["Artist"],
+        "operationId": "artistInfo",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "description": "artist name",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Artist's information.",
+            "schema": {
+              "$ref": "#/definitions/ArtistInfo"
+            }
+          }
+        }
+      }
+    },
+    "/lastfm/artist/similar": {
+      "get": {
+        "tags": ["Artist"],
+        "operationId": "artistSimilar",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "description": "artist name",
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "result limit",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/ArtistInfoBase"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ArtistInfo": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "onTour": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Tag"
+          }
+        }
+      }
+    },
+    "ArtistInfoBase": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "Tag": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

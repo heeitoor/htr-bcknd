@@ -1,16 +1,15 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var MockPostHandler = /** @class */ (function () {
-    function MockPostHandler() {
-    }
-    MockPostHandler.prototype.handle = function (request) {
-        return {
-            data: {
-                p: "Pong!",
-                result: request
-            }
-        };
-    };
-    return MockPostHandler;
-}());
-exports.MockPostHandler = MockPostHandler;
+// import { IHandler, IResponse } from "../../lib/MEdiator";
+// import { MockPostModel } from "../models/Mock";
+// import { MockPostResponse } from "../responses/MockResponse";
+// export class MockPostHandler
+//   implements IHandler<MockPostModel, MockPostResponse> {
+//   handle(request: MockPostModel): IResponse<MockPostResponse> {
+//     return {
+//       data: {
+//         p: "Pong!",
+//         result: request
+//       }
+//     };
+//   }
+// }
