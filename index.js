@@ -1,46 +1,103 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const Router_1 = require("./lib/Router");
-const body_parser_1 = require("body-parser");
-const HandlerMiddleware_1 = require("./middlewares/HandlerMiddleware");
-//import { RedisMiddleware } from "./middlewares/RedisMiddleware";
-const http_1 = __importDefault(require("http"));
-const cors_1 = __importDefault(require("cors"));
-const app = express_1.default();
-const http = http_1.default.createServer(app);
-//const sckt = io(http).emit("some event", { for: "everyone" });
-app.use(body_parser_1.json());
-// app.get("/", function(req: any, res: any) {
-//   res.sendFile(__dirname + "/client/index.html");
+var express = require('express');
+var cors = require('cors');
+var bodyParser = require('body-parser');
+
+var app = express();
+
+const { Client } = require('pg');
+
+app.use(cors());
+app.use(bodyParser());
+
+var attendanceRouter = express.Router();
+attendanceRouter
+  .get('/:teacherId', async (req, res) => {})
+  .post('/', async (req, res) => {
+    const client = await new Client({
+      host: 'ec2-54-243-228-140.compute-1.amazonaws.com',
+      port: '5432',
+      database: 'dbc5g3rhcqdmjk',
+      user: 'ellltvtputtemb',
+      password: '14dba0e9d0bf40d3570c0f349c9ec20b9154602c594a5210a3c67d7b7b2e5f3a',
+      ssl: true
+    });
+    await client.connect();
+    const r = await client.query('insert into attendance (date,"teacherClassId",status) values ($1, $2, $3);', [
+      req.body.date,
+      req.body.teacherId,
+      'OPEN'
+    ]);
+
+    res.sendStatus(200);
+  })
+  .put('/', async (req, res) => {});
+app.use('/attendance', attendanceRouter);
+
+var teacherClassRouter = express.Router();
+teacherClassRouter
+  .get('/:teacherId/:date', async (req, res) => {
+    const client = await new Client({
+      host: 'ec2-54-243-228-140.compute-1.amazonaws.com',
+      port: '5432',
+      database: 'dbc5g3rhcqdmjk',
+      user: 'ellltvtputtemb',
+      password: '14dba0e9d0bf40d3570c0f349c9ec20b9154602c594a5210a3c67d7b7b2e5f3a',
+      ssl: true
+    });
+    await client.connect();
+    const r = await client.query(
+      `
+      select c.id "classId", c.name "className", a.id "attendanceId", a.date "attendanceDate" from "teacherClass" tc join "class" c on c.id = tc."classId" left join attendance a on tc.id = a."teacherClassId" and a.date = '${
+        req.params.date
+      }' where tc."teacherId" = ${req.params.teacherId};`
+    );
+    res.send(r.rows);
+  })
+  .post('/', async (req, res) => {})
+  .put('/', async (req, res) => {});
+app.use('/teacherClass', teacherClassRouter);
+
+var classRouter = express.Router();
+classRouter
+  .get('/', async (req, res) => {})
+  .post('/', async (req, res) => {})
+  .put('/', async (req, res) => {});
+app.use('/class', classRouter);
+
+var teacherRouter = express.Router();
+teacherRouter.get('/', async (req, res) => {
+  const client = await new Client({
+    host: 'ec2-54-243-228-140.compute-1.amazonaws.com',
+    port: '5432',
+    database: 'dbc5g3rhcqdmjk',
+    user: 'ellltvtputtemb',
+    password: '14dba0e9d0bf40d3570c0f349c9ec20b9154602c594a5210a3c67d7b7b2e5f3a',
+    ssl: true
+  });
+  await client.connect();
+  const r = await client.query('select * from teacher');
+  res.send(r.rows);
+});
+app.use('/teacher', teacherRouter);
+
+// .get("/", async (req, res) => {
+//   try {
+//     const client = await new Client({
+//       host: "ec2-54-243-228-140.compute-1.amazonaws.com",
+//       port: "5432",
+//       database: "dbc5g3rhcqdmjk",
+//       user: "ellltvtputtemb",
+//       password: "14dba0e9d0bf40d3570c0f349c9ec20b9154602c594a5210a3c67d7b7b2e5f3a",
+//       ssl: true
+//     });
+//     await client.connect();
+//     const r = await client.query("select * from teacher");
+//     res.send(r.rows);
+//   } catch (e) {
+//     res.send({ error: e });
+//   }
 // });
-//app.use(express.static("client"));
-//app.use(RedisMiddleware.definition);
-app.use(HandlerMiddleware_1.HandlerMiddleware.definition);
-const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./swagger.json');
-app.use(cors_1.default());
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-// sckt.on("connection", (socket: any) => {
-//   socket.broadcast.emit("hi");
-//   console.log("a user connected");
-//   socket.on("disconnect", function() {
-//     console.log("user disconnected");
-//   });
-//   socket.on("chat message", function(msg: any) {
-//     sckt.emit("chat message", msg);
-//   });
-// });
-// app.use("/param", (req, res) => {
-//   res.send(process.env.TEST || "didn't work");
-// });
-// app.use("/redis", (req, res) => {
-//   // client.get("htht", (e, r) => {
-//   //   res.send(r);
-//   // });
-// });
-Router_1.RouteBundle.register(app);
-http.listen(process.env.PORT || 3500);
+
+console.log('Starting app at: localhost:3500');
+
+app.listen(process.env.PORT || 3500);
