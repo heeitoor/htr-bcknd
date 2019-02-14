@@ -3,7 +3,6 @@ const md5 = require('md5');
 const schema = require('./schemas/Frekvens');
 var connection = require('../db/connection');
 
-
 class Routers {
   attendance() {
     var attendanceRouter = express.Router();
@@ -16,7 +15,7 @@ class Routers {
         const client = await connection.instance();
 
         const result = await client.query(
-          'insert into attendance (date,"teacherClassId",status) values ($1, $2, $3);',
+          'insert into attendance ("date", "teacherClassId", "status") values ($1, $2, $3);',
           [req.body.date, req.body.teacherId, 'OPEN']
         );
 
@@ -47,9 +46,12 @@ class Routers {
 
         const result = await client.query(
           `
-              select c.id "classId", c.name "className", a.id "attendanceId", a.date "attendanceDate" from "teacherClass" tc join "class" c on c.id = tc."classId" left join attendance a on tc.id = a."teacherClassId" and a.date = '${
-                req.params.date
-              }' where tc."teacherId" = ${req.params.teacherId};`
+            select c.id "classId", c.name "className", a.id "attendanceId", a.date "attendanceDate"
+            from "teacherClass" tc
+            join "class" c on c.id = tc."classId"
+            left join attendance a on tc.id = a."teacherClassId" and a.date = '${req.params.date}'
+            where tc."teacherId" = ${req.params.teacherId};
+          `
         );
 
         res.send(result.rows);
@@ -71,10 +73,15 @@ class Routers {
       })
       .post('/', schema.post, async (req, res) => {
         const client = await connection.instance();
-        const result = await client.query(`
-            select * from teacher t
+      
+        const result = await client.query(
+          `
+            select *
+            from teacher t
             where t."userName" = '${req.body.userName}' and t."password" = '${md5(req.body.password)}'
-            `);
+          `
+        );
+
         res.send(
           result.rows.map(item => {
             return {
