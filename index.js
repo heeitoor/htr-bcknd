@@ -12,6 +12,8 @@ app.use(cors());
 app.use(bodyParser());
 app.use('/attendance', Routers.attendance());
 app.use('/teacher', Routers.teacher());
+app.use('/teacherClass', Routers.teacherClass());
+app.use('/attendanceStudent', Routers.attendanceStudent());
 
 // var attendanceRouter = express.Router();
 // attendanceRouter

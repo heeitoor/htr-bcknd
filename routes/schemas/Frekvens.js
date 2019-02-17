@@ -1,17 +1,36 @@
 const Joi = require('joi');
 
 class FrekvensSchema {
-  post(req, res, next) {
-    // const postSchema = Joi.object({
-    //   userName: Joi.string().required(),
-    //   password: Joi.string().required()
-    // });
+  async teacherPost(req, res, next) {
+    const postSchema = Joi.object({
+      userName: Joi.string().required(),
+      password: Joi.string().required()
+    });
 
-    // const result = await Joi.validate(req.body, postSchema);
+    try {
+      await Joi.validate(req.body, postSchema);
+      next();
+    } catch (x) {
+      res.send({
+        errors: x.details
+      });
+    }
+  }
 
-    console.log('yo');
-res.send('yo');
-    //next();
+  async attendancePost(req, res, next) {
+    const schema = Joi.object({
+      teacherclassId: Joi.string().required(),
+      date: Joi.date().required()
+    });
+
+    try {
+      await Joi.validate(req.query, schema);
+      next();
+    } catch (x) {
+      res.send({
+        errors: x.details
+      });
+    }
   }
 }
 

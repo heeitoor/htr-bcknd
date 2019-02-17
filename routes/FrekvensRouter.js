@@ -15,11 +15,11 @@ class Routers {
         const client = await connection.instance();
 
         const result = await client.query(
-          'insert into attendance ("date", "teacherClassId", "status") values ($1, $2, $3);',
-          [req.body.date, req.body.teacherId, 'OPEN']
+          'insert into attendance ("date", "teacherClassId", "status") values ($1, $2, $3) RETURNING id;',
+          [req.body.date, req.body.teacherClassId, 'OPEN']
         );
 
-        res.sendStatus(200);
+        res.send(result.rows[0]);
       })
       .put('/', async (req, res) => {});
 
@@ -46,7 +46,7 @@ class Routers {
 
         const result = await client.query(
           `
-            select c.id "classId", c.name "className", a.id "attendanceId", a.date "attendanceDate"
+            select tc.id "teacherClassId", c.id "classId", c.name "className", a.id "attendanceId", a.date "attendanceDate"
             from "teacherClass" tc
             join "class" c on c.id = tc."classId"
             left join attendance a on tc.id = a."teacherClassId" and a.date = '${req.params.date}'
@@ -71,9 +71,9 @@ class Routers {
         const result = await client.query(`select * from teacher`);
         res.send(result.rows);
       })
-      .post('/', schema.post, async (req, res) => {
+      .post('/', schema.teacherPost, async (req, res) => {
         const client = await connection.instance();
-      
+
         const result = await client.query(
           `
             select *
@@ -93,6 +93,31 @@ class Routers {
       });
 
     return teacherRouter;
+  }
+
+  attendanceStudent() {
+    var attendanceStudentRouter = express.Router();
+    console.log(242322222)
+
+    attendanceStudentRouter.get('/:teacherClassId', async (req, res) => {
+      const client = await connection.instance();
+console.log(234234)
+      const result = await client.query(
+        `
+          select c."name" "className", s.id "studentId", s.code "studentCode", s."name" "stundentName", a.id
+          from "teacherClass" tc
+          join "studentClass" sc on tc."classId" = sc."classId"
+          join "class" c on sc."classId" = c.id
+          join "student" s on sc."studentId" = s.id
+          left join "attendanceStudent" a on a."studentId" = s.id
+          where tc.id = ${req.params.teacherClassId};
+        `
+      );
+
+      res.send(result.rows);
+    });
+
+    return attendanceStudentRouter;
   }
 }
 
