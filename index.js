@@ -10,10 +10,10 @@ const { Client } = require('pg');
 require('dotenv').config();
 app.use(cors());
 app.use(bodyParser());
-app.use('/attendance', Routers.attendance());
-app.use('/teacher', Routers.teacher());
-app.use('/teacherClass', Routers.teacherClass());
-app.use('/attendanceStudent', Routers.attendanceStudent());
+app.use('/pwof/attendance', Routers.attendance());
+app.use('/pwof/teacher', Routers.teacher());
+app.use('/pwof/teacherClass', Routers.teacherClass());
+app.use('/pwof/attendanceStudent', Routers.attendanceStudent());
 
 // var attendanceRouter = express.Router();
 // attendanceRouter

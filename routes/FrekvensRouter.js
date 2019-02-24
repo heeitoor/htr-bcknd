@@ -19,7 +19,35 @@ class Routers {
           [req.body.date, req.body.teacherClassId, 'OPEN']
         );
 
-        res.send(result.rows[0]);
+        const attendanceId = result.rows[0].id;
+
+        const tc = await client.query(
+          `
+            select *
+            from "teacherClass" tc
+            where tc.id = ${req.body.teacherClassId};
+          `
+        );
+        const classId = tc.rows[0].classId;
+
+        const sc = await client.query(
+          `
+            select *
+            from "studentClass" sc
+            where sc."classId" = ${classId};
+          `
+        );
+
+        for (const s of sc.rows) {
+          await client.query(`INSERT INTO "attendanceStudent"
+          ("attendanceId", "studentId")
+          VALUES($1, $2);`, [
+            attendanceId,
+            s.studentId
+          ]);
+        }
+
+        res.send('result.rows[0]');
       })
       .put('/', async (req, res) => {});
 
@@ -97,11 +125,11 @@ class Routers {
 
   attendanceStudent() {
     var attendanceStudentRouter = express.Router();
-    console.log(242322222)
+    console.log(242322222);
 
     attendanceStudentRouter.get('/:teacherClassId', async (req, res) => {
       const client = await connection.instance();
-console.log(234234)
+      console.log(234234);
       const result = await client.query(
         `
           select c."name" "className", s.id "studentId", s.code "studentCode", s."name" "stundentName", a.id
