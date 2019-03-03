@@ -4,6 +4,55 @@ const schema = require("./schemas/Frekvens");
 const _ = require("lodash");
 var connection = require("../db/connection");
 
+const addStudentAttendance = async ({ attendanceId, classId, number }) => {
+  const client = await connection.instance();
+
+  const sc = await client.query(
+    `
+      select *
+      from "studentClass" sc
+      where sc."classId" = ${classId};
+    `
+  );
+  console.log(number)
+  if (number === 1) {
+    const yo = await client.query(
+      `
+      delete from "attendanceStudent" where "attendanceId" = $1 and "index" > 1;
+      `,
+      [attendanceId]
+    );
+    console.log(yo);
+  }
+  else {
+    for (const s of sc.rows) {
+      await client.query(
+        `INSERT INTO "attendanceStudent"
+    ("attendanceId", "studentId", "status", index)
+    VALUES($1, $2, true, $3);`,
+        [attendanceId, s.studentId, number]
+      );
+    }
+  }
+
+  client.end();
+};
+
+const addAttendance = async ({ date, teacherClassId }) => {
+  const client = await connection.instance();
+
+  const result = await client.query(
+    'insert into attendance ("date", "teacherClassId", "status") values ($1, $2, $3) RETURNING id;',
+    [date, teacherClassId, "OPEN"]
+  );
+
+  const attendanceId = result.rows[0].id;
+
+  client.end();
+
+  return attendanceId;
+};
+
 class Routers {
   attendance() {
     var attendanceRouter = express.Router();
@@ -13,46 +62,20 @@ class Routers {
         res.sendStatus(404);
       })
       .post("/", async (req, res) => {
-        const client = await connection.instance();
+        const attendanceId = await addAttendance(req.body);
 
-        const result = await client.query(
-          'insert into attendance ("date", "teacherClassId", "status") values ($1, $2, $3) RETURNING id;',
-          [req.body.date, req.body.teacherClassId, "OPEN"]
-        );
+        const postData = {
+          ...req.body,
+          attendanceId
+        };
 
-        const attendanceId = result.rows[0].id;
-
-        const tc = await client.query(
-          `
-            select *
-            from "teacherClass" tc
-            where tc.id = ${req.body.teacherClassId};
-          `
-        );
-        const classId = tc.rows[0].classId;
-
-        const sc = await client.query(
-          `
-            select *
-            from "studentClass" sc
-            where sc."classId" = ${classId};
-          `
-        );
-
-        for (const s of sc.rows) {
-          await client.query(
-            `INSERT INTO "attendanceStudent"
-          ("attendanceId", "studentId", "status")
-          VALUES($1, $2, true);`,
-            [attendanceId, s.studentId]
-          );
-        }
+        await addStudentAttendance(postData);
 
         res.send({
           ok: attendanceId
         });
       })
-      .put("/", async (req, res) => {});
+      .put("/", async (req, res) => { });
 
     return attendanceRouter;
   }
@@ -61,9 +84,9 @@ class Routers {
     var classRouter = express.Router();
 
     classRouter
-      .get("/", async (req, res) => {})
-      .post("/", async (req, res) => {})
-      .put("/", async (req, res) => {});
+      .get("/", async (req, res) => { })
+      .post("/", async (req, res) => { })
+      .put("/", async (req, res) => { });
 
     return classRouter;
   }
@@ -81,16 +104,16 @@ class Routers {
             from "teacherClass" tc
             join "class" c on c.id = tc."classId"
             left join attendance a on tc.id = a."teacherClassId" and a.date = '${
-              req.params.date
-            }'
+          req.params.date
+          }'
             where tc."teacherId" = ${req.params.teacherId};
           `
         );
-
+        client.end();
         res.send(result.rows);
       })
-      .post("/", async (req, res) => {})
-      .put("/", async (req, res) => {});
+      .post("/", async (req, res) => { })
+      .put("/", async (req, res) => { });
 
     return teacherClassRouter;
   }
@@ -112,11 +135,11 @@ class Routers {
             select *
             from teacher t
             where t."userName" = '${
-              req.body.userName
-            }' and t."password" = '${md5(req.body.password)}'
+          req.body.userName
+          }' and t."password" = '${md5(req.body.password)}'
           `
         );
-
+        client.end();
         res.send(
           result.rows.map(item => {
             return {
@@ -132,19 +155,21 @@ class Routers {
 
   attendanceStudent() {
     var attendanceStudentRouter = express.Router();
-    console.log(242322222);
 
     attendanceStudentRouter
       .get("/:attendanceId", async (req, res) => {
         const client = await connection.instance();
 
+        const { attendanceId } = req.params;
+
         let result = await client.query(
           `
-            select s.id studentId, a.date attendanceDate, a.status attendanceStatus, s.name studentName, "as".status studentStatus
-            from "attendance" a
-            join "attendanceStudent" "as" on a.id = "as"."attendanceId"
-            join student s on "as"."studentId" = s.id
-            where a.id = ${req.params.attendanceId};       
+          select tc."classId", s.id studentId, a.date attendanceDate, a.status attendanceStatus, s.name studentName, "as".status studentStatus
+          from "attendance" a
+          join "attendanceStudent" "as" on a.id = "as"."attendanceId"
+          join student s on "as"."studentId" = s.id
+          join "teacherClass" tc on a."teacherClassId" = tc.id
+            where a.id = ${attendanceId};       
           `
         );
 
@@ -152,21 +177,24 @@ class Routers {
           .groupBy("studentid")
           .map((items, key) => {
             return {
-              id:key,
-              name:items[0].studentname,
+              id: key,
+              name: items[0].studentname,
               attendances: items.map(item => {
                 return item.studentstatus;
               })
             };
           })
           .value();
+        console.log(result.rows);
 
         result = {
+          attendanceId: parseInt(attendanceId),
+          classId: parseInt(result.rows[0].classId),
           attendanceDate: result.rows[0].attendancedate,
           attendanceStatus: result.rows[0].attendancestatus,
           list: studentList
         };
-
+        client.end();
         res.send(result);
         /*const client = await connection.instance();
         console.log(234234);
@@ -183,6 +211,10 @@ class Routers {
         );
 
         res.send(result.rows);*/
+      })
+      .put('/', async (req, res) => {
+        await addStudentAttendance(req.body);
+        res.send({});
       })
       .delete("/");
 

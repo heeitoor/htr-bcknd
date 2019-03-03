@@ -6,6 +6,7 @@ exports.up = knex => {
     table.integer("studentId").notNullable();
     table.foreign("studentId").references("student.id");
     table.boolean("status");
+    table.integer('index');
   });
 };
 
