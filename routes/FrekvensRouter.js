@@ -14,17 +14,8 @@ const addStudentAttendance = async ({ attendanceId, classId, number }) => {
       where sc."classId" = ${classId};
     `
   );
-  console.log(number)
-  if (number === 1) {
-    const yo = await client.query(
-      `
-      delete from "attendanceStudent" where "attendanceId" = $1 and "index" > 1;
-      `,
-      [attendanceId]
-    );
-    console.log(yo);
-  }
-  else {
+
+  const addAttendances = async () => {
     for (const s of sc.rows) {
       await client.query(
         `INSERT INTO "attendanceStudent"
@@ -33,6 +24,23 @@ const addStudentAttendance = async ({ attendanceId, classId, number }) => {
         [attendanceId, s.studentId, number]
       );
     }
+  };
+
+  if (number === 1) {
+    const yo = await client.query(
+      `
+      delete from "attendanceStudent" where "attendanceId" = $1 and "index" > 1;
+      `,
+      [attendanceId]
+    );
+    console.log(yo);
+
+    if (yo.rowCount === 0) {
+      await addAttendances();
+    }
+  }
+  else {
+    await addAttendances();
   }
 
   client.end();
@@ -164,12 +172,14 @@ class Routers {
 
         let result = await client.query(
           `
-          select tc."classId", s.id studentId, a.date attendanceDate, a.status attendanceStatus, s.name studentName, "as".status studentStatus
+          select tc."classId", c.name "className", s.id studentId, a.date attendanceDate, a.status attendanceStatus, s.name studentName, "as".id "studentAttendanceId","as".status studentStatus
           from "attendance" a
           join "attendanceStudent" "as" on a.id = "as"."attendanceId"
           join student s on "as"."studentId" = s.id
           join "teacherClass" tc on a."teacherClassId" = tc.id
-            where a.id = ${attendanceId};       
+          join "class" c on tc."classId" = c.id
+          where a.id = ${attendanceId}
+          order by "as".id asc;
           `
         );
 
@@ -180,16 +190,19 @@ class Routers {
               id: key,
               name: items[0].studentname,
               attendances: items.map(item => {
-                return item.studentstatus;
+                return {
+                  studentAttendanceId: item.studentAttendanceId,
+                  studentstatus: item.studentstatus
+                };
               })
             };
           })
           .value();
-        console.log(result.rows);
 
         result = {
           attendanceId: parseInt(attendanceId),
           classId: parseInt(result.rows[0].classId),
+          className: result.rows[0].className,
           attendanceDate: result.rows[0].attendancedate,
           attendanceStatus: result.rows[0].attendancestatus,
           list: studentList
@@ -214,6 +227,22 @@ class Routers {
       })
       .put('/', async (req, res) => {
         await addStudentAttendance(req.body);
+        res.send({});
+      })
+      .put('/single', async (req, res) => {
+        const { studentAttendanceId, studentstatus } = req.body;
+
+        const client = await connection.instance();
+
+        await client.query(
+          `
+            update "attendanceStudent" set status = $1 where id = $2;
+          `,
+          [!studentstatus, studentAttendanceId]
+        );
+
+        client.end();
+
         res.send({});
       })
       .delete("/");
