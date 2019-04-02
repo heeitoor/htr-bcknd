@@ -8,13 +8,13 @@ exports.up = knex => {
         .timestamp('created_at')
         .defaultTo(knex.fn.now())
         .notNullable();
-    })
-    .then(() => {
-      return knex('student').insert([
-        { code: 'CJ01', name: 'Caju' },
-        { code: 'AMR02', name: 'Amora' }
-      ]);
     });
+    // .then(() => {
+    //   return knex('student').insert([
+    //     { code: 'CJ01', name: 'Caju' },
+    //     { code: 'AMR02', name: 'Amora' }
+    //   ]);
+    // });
 };
 
 exports.down = knex => {

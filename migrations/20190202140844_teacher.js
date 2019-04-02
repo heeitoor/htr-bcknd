@@ -9,21 +9,21 @@ exports.up = knex => {
         .timestamp("created_at")
         .defaultTo(knex.fn.now())
         .notNullable();
-    })
-    .then(() => {
-      return knex("teacher").insert([
-        {
-          name: "Aline Var",
-          userName: "aline",
-          password: "202cb962ac59075b964b07152d234b70"
-        },
-        {
-          name: "Heitor Mir",
-          userName: "heitor",
-          password: "202cb962ac59075b964b07152d234b70"
-        }
-      ]);
     });
+    // .then(() => {
+    //   return knex("teacher").insert([
+    //     {
+    //       name: "Aline Var",
+    //       userName: "aline",
+    //       password: "202cb962ac59075b964b07152d234b70"
+    //     },
+    //     {
+    //       name: "Heitor Mir",
+    //       userName: "heitor",
+    //       password: "202cb962ac59075b964b07152d234b70"
+    //     }
+    //   ]);
+    // });
 };
 
 exports.down = knex => {

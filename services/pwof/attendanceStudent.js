@@ -43,7 +43,9 @@ class AttendanceStudentService {
   async get({ attendanceId }) {
     const response = await knex.raw(
       `
-        select tc."classId", c.name "className", s.id studentId, a.date attendanceDate, a.status attendanceStatus, s.name studentName, "as".id "studentAttendanceId","as".status studentStatus
+        select tc."classId", c.name "className", s.id studentId, a.date attendanceDate,
+        a.status attendanceStatus, s.name studentName, "as".id "studentAttendanceId","as".status studentStatus,
+        (select status from "studentClass" sc where sc."classId" = c.id and sc."studentId" = s.id limit 1) situation
         from "attendance" a
         join "attendanceStudent" "as" on a.id = "as"."attendanceId"
         join student s on "as"."studentId" = s.id
@@ -60,6 +62,7 @@ class AttendanceStudentService {
         return {
           id: key,
           name: items[0].studentname,
+          situation: items[0].situation,
           attendances: items.map(item => {
             return {
               studentAttendanceId: item.studentAttendanceId,
