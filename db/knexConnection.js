@@ -1,5 +1,6 @@
 const pg = require('pg');
 
+require('dotenv').config();
 pg.defaults.ssl = true;
 
 const knex = require('knex')({
@@ -10,7 +11,7 @@ const knex = require('knex')({
     database: process.env.DB,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
-    ssl: true
+    ssl: process.env.DB_SSL
   },
   searchPath: ['knex', 'public']
 });
