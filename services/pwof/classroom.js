@@ -18,7 +18,8 @@ class ClassroomService {
       )
       select s.id "studentId", s.code, s.name, c.id, c."classId", c.status
       from student s
-      left join cte c on s.id = c."studentId";
+      left join cte c on s.id = c."studentId"
+      order by c."classId", s.name;
     `);
 
     return response.rows;
