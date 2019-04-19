@@ -11,9 +11,10 @@ class FrekvensSchema {
       await Joi.validate(req.body, postSchema);
       next();
     } catch (x) {
-      res.send({
-        errors: x.details
-      });
+      // res.send({
+      //   errors: x.details
+      // });
+      res.send(false);
     }
   }
 
